@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { FileText, Plus, X, Trash2, Edit2, Search, Clock } from "lucide-react";
+import { FileText, Plus, X, Trash2, Edit2, Search, Clock, ArrowLeft } from "lucide-react";
 import {
   loadStore,
   addNote,
@@ -27,6 +27,8 @@ export default function NotesPage() {
   const [editing, setEditing] = useState<Note | null>(null);
   const [form, setForm] = useState<Omit<Note, "id" | "createdAt" | "updatedAt">>(BLANK);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  // Mobile: track whether we're showing the list or the detail pane
+  const [mobileShowDetail, setMobileShowDetail] = useState(false);
 
   useEffect(() => {
     const store = loadStore();
@@ -114,7 +116,89 @@ export default function NotesPage() {
         </button>
       </div>
 
-      <div className="flex gap-5 h-[calc(100vh-200px)] min-h-[400px]">
+      {/* ── Mobile: stacked single-pane ─────────────────────────── */}
+      <div className="md:hidden h-[calc(100vh-180px)] min-h-[400px]">
+        {/* Mobile list pane */}
+        {!mobileShowDetail && (
+          <div
+            className="rounded-2xl flex flex-col h-full overflow-hidden"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <div className="p-3" style={{ borderBottom: "1px solid var(--border)" }}>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: "var(--surface-2)" }}>
+                <Search size={13} style={{ color: "var(--text-muted)" }} />
+                <input
+                  className="flex-1 bg-transparent text-xs outline-none"
+                  placeholder="Search notes…"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  style={{ color: "var(--foreground)" }}
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {filtered.length === 0 ? (
+                <p className="px-4 py-8 text-xs text-center" style={{ color: "var(--text-muted)" }}>No notes found</p>
+              ) : (
+                filtered.map((n) => (
+                  <button
+                    key={n.id}
+                    onClick={() => { setSelected(n); setMobileShowDetail(true); }}
+                    className="w-full text-left px-4 py-3 transition-colors hover:bg-white/[0.03]"
+                    style={{ borderBottom: "1px solid var(--border)" }}
+                  >
+                    <p className="text-sm font-medium truncate mb-1">{n.title}</p>
+                    <p className="text-xs truncate mb-1" style={{ color: "var(--text-muted)" }}>{n.content.slice(0, 60)}…</p>
+                    <p className="text-xs flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                      <Clock size={10} />
+                      {new Date(n.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                    </p>
+                  </button>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Mobile detail pane */}
+        {mobileShowDetail && displayNote && (
+          <div
+            className="rounded-2xl flex flex-col h-full overflow-hidden"
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+          >
+            <div className="px-4 py-3 flex items-center justify-between" style={{ borderBottom: "1px solid var(--border)" }}>
+              <button
+                onClick={() => setMobileShowDetail(false)}
+                className="flex items-center gap-1.5 text-sm"
+                style={{ color: "var(--gold)" }}
+              >
+                <ArrowLeft size={16} />
+                Notes
+              </button>
+              <div className="flex items-center gap-2">
+                <button onClick={() => openEdit(displayNote)} className="p-1.5 rounded-lg hover:bg-white/5" style={{ color: "var(--text-muted)" }}>
+                  <Edit2 size={14} />
+                </button>
+                <button onClick={() => setDeleteId(displayNote.id)} className="p-1.5 rounded-lg hover:bg-red-500/10" style={{ color: "var(--text-muted)" }}>
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            </div>
+            <div className="px-4 py-2" style={{ borderBottom: "1px solid var(--border)" }}>
+              <h2 className="font-semibold">{displayNote.title}</h2>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>
+                {new Date(displayNote.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+              </p>
+            </div>
+            <div className="flex-1 overflow-y-auto px-4 py-4">
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{displayNote.content}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Desktop: two-pane side-by-side ───────────────────────── */}
+      <div className="hidden md:flex gap-5 h-[calc(100vh-200px)] min-h-[400px]">
         {/* Sidebar list */}
         <div
           className="w-64 flex-shrink-0 rounded-2xl flex flex-col overflow-hidden"
@@ -238,7 +322,7 @@ export default function NotesPage() {
             </div>
           )}
         </div>
-      </div>
+      </div>{/* end desktop two-pane */}
 
       {/* Add/Edit Modal */}
       {showModal && (

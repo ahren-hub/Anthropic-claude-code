@@ -490,7 +490,7 @@ function DealCard({
             </span>
           )}
         </div>
-        <div className="flex items-center gap-1.5 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="flex items-center gap-1.5 mt-2 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
           <button onClick={onEdit} className="p-1 rounded hover:bg-white/5" style={{ color: "var(--text-muted)" }}>
             <Edit2 size={12} />
           </button>

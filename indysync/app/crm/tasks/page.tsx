@@ -264,7 +264,7 @@ export default function TasksPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                <div className="flex items-center gap-1 md:opacity-0 md:group-hover:opacity-100 transition-opacity flex-shrink-0">
                   <button
                     onClick={() => openEdit(t)}
                     className="p-1.5 rounded-lg hover:bg-white/5"
